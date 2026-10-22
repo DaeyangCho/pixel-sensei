@@ -1,0 +1,32 @@
+# Python
+.venv*/
+__pycache__/
+*.pyc
+.DS_Store
+
+# made while playing (your own logs, screenshots, progress)
+logs/
+debug/
+data/progress.json
+data/names.json
+data/snaps/
+data/glyph_ctx/
+
+# game-derived: glyph bitmaps from the game font, sprites, your screen captures
+data/glyphs.json
+data/glyph_*.json
+data/glyphs.backup-*.json
+data/sprites/
+tests/frames/
+
+# downloaded with `python jp_text.py build`
+data/glossary.json
+
+# personal vocab page (contains Pokédex text + sprites) and its Anki deck
+vocab/*.html
+vocab/*.apkg
+vocab/anki/
+vocab/old_pipeline/
+
+# LAN password for the phone pad page
+auto/pad_token.txt

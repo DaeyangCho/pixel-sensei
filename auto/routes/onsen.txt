@@ -1,0 +1,21 @@
+# hot spring round trip, running (B held). walking version: onsen_walk.txt
+# start: where you stood when you began recording, facing as you did then
+# door lines: the first run logs "전환: K칸째" -> change "door" to "door=K" and the whole line runs in one go
+# if a line comes up short indoors (some buildings don't allow running), remove "run" from that line
+walk UP 7 run
+walk RIGHT 2 run
+walk UP 23 run door=3        # cave entrance on the way
+walk RIGHT 8 run
+walk UP 11 run
+walk LEFT 8 run
+walk DOWN 5 run
+press A
+press A
+until_free
+walk UP 4 run
+walk RIGHT 8 run
+walk DOWN 12 run
+walk LEFT 8 run
+walk DOWN 21 run door=18      # back out of the cave
+walk LEFT 2 run
+walk DOWN 20 run

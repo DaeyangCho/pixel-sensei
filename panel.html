@@ -1,0 +1,545 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>포켓몬 일본어 패널</title>
+<style>
+:root{
+  --bg:#121417; --card:#1b1e23; --card2:#16191d; --line:#2a2e35; --text:#eceae4; --muted:#9a9890;
+  --dim:#6d6b65; --accent:#ef6b4a; --accent-bg:#3a211b; --good:#6cc28a; --chip:#262a31;
+  --ja:"Hiragino Sans","Hiragino Kaku Gothic ProN","Noto Sans JP",system-ui,sans-serif;
+  --ko:"Apple SD Gothic Neo","Pretendard",system-ui,sans-serif;
+}
+@media (prefers-color-scheme: light){
+  :root{--bg:#f3f1ec;--card:#ffffff;--card2:#faf9f6;--line:#e3e0d8;--text:#1f1e1b;--muted:#6b6962;
+        --dim:#9b988f;--accent:#d4472a;--accent-bg:#fbe9e3;--good:#2f8f55;--chip:#efede7;}
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font-family:var(--ko);-webkit-font-smoothing:antialiased}
+header{position:sticky;top:0;z-index:5;background:var(--bg);border-bottom:1px solid var(--line);
+       padding:10px 16px;display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.title{font-weight:600;font-size:15px;margin-right:auto;display:flex;align-items:center;gap:8px}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--dim)}
+.dot.on{background:var(--good)}
+button,select{font:inherit;font-size:13px;color:var(--text);background:var(--chip);border:1px solid var(--line);
+              border-radius:8px;padding:5px 10px;cursor:pointer}
+button:hover{border-color:var(--muted)}
+a.navlink{font-size:13px;color:var(--text);background:var(--chip);border:1px solid var(--line);border-radius:8px;
+          padding:5px 10px;text-decoration:none;white-space:nowrap}
+a.navlink:hover{border-color:var(--muted)}
+button.on{background:var(--accent-bg);border-color:var(--accent);color:var(--accent)}
+button.off{color:var(--muted);border-style:dashed}
+kbd{font-family:ui-monospace,monospace;font-size:11px;color:var(--muted);border:1px solid var(--line);
+    border-radius:4px;padding:0 4px;margin-left:4px}
+main{padding:16px;max-width:820px;margin:0 auto}
+/* word rail: right column on a wide window, a bottom sheet on a narrow one */
+.layout{display:flex;gap:16px;justify-content:center;align-items:flex-start;padding:0 16px}
+.layout main{flex:1 1 auto;min-width:0;margin:0;padding:16px 0}
+.rail{flex:0 0 330px;position:sticky;top:62px;max-height:calc(100vh - 78px);overflow:auto;margin-top:16px;
+      background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.rail-h{all:unset;display:flex;align-items:baseline;gap:6px;width:100%;font-weight:600;font-size:14px;cursor:default}
+.rail-h small{font-weight:400;color:var(--dim);font-size:12px}
+.rail h4{margin:14px 0 6px;font-size:12px;font-weight:600;color:var(--dim);letter-spacing:.04em}
+.wchips{display:flex;flex-direction:column;gap:5px}
+.wchip{all:unset;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;column-gap:8px;align-items:baseline;
+       background:var(--card2);border:1px solid transparent;border-radius:9px;padding:6px 9px}
+.wchip:hover{border-color:var(--line)}.wchip.sel{border-color:var(--accent)}
+.wchip .wj{font-family:var(--ja);font-size:17px;font-weight:600}
+.wchip .wko{font-size:13.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wchip .wn{font-size:11px;color:var(--dim);font-variant-numeric:tabular-nums}
+.wchip .wk{grid-column:1;font-family:var(--ja);font-size:12px;color:var(--dim)}
+.wchip .wsame{grid-column:2/4;font-size:11px;color:var(--good);justify-self:start}
+.wchip.known{opacity:.45}
+.wstar{color:var(--accent);margin-left:2px}
+.wempty{font-size:12.5px;color:var(--dim)}
+.wd{background:var(--accent-bg);border-radius:10px;padding:10px 12px;margin-top:10px}
+.wd-top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.wd-j{font-family:var(--ja);font-size:26px;font-weight:600}.wd-k{font-family:var(--ja);font-size:18px;color:var(--muted)}
+.wd-say{all:unset;cursor:pointer;margin-left:auto;font-size:16px}
+.wd-ko{font-size:17px;font-weight:600;margin-top:2px}
+.wd-kr{font-size:13px;color:var(--muted);margin-top:4px}.wd-kr b{color:var(--good)}
+.wd-note{font-size:13.5px;line-height:1.55;margin-top:6px}
+.wd-ex{margin-top:8px;display:flex;flex-direction:column;gap:5px}
+.wd-ex div{font-size:12.5px;line-height:1.45}.wd-ex .j{font-family:var(--ja);display:block;font-size:14px}.wd-ex .k{color:var(--muted)}
+.wd-act{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.wd-n{font-size:11.5px;color:var(--dim)}
+.layout.norail .rail{display:none}
+.vwords{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+.vw{all:unset;cursor:pointer;display:inline-flex;align-items:baseline;gap:6px;background:var(--card2);border:1px solid var(--line);
+    border-radius:9px;padding:4px 10px}
+.vw b{font-family:var(--ja);font-size:17px;font-weight:600}.vw i{font-style:normal;font-family:var(--ja);font-size:13px;color:var(--dim)}
+.vw span{font-size:14px;color:var(--muted)}.vw em{font-style:normal;font-size:11px;color:var(--good)}
+@media (max-width:1180px){
+  .layout.norail main{padding-bottom:16px}
+  .layout{display:block;padding:0}
+  .layout main{padding:16px 16px 72px;margin:0 auto;max-width:820px}
+  .rail{position:fixed;left:0;right:0;bottom:0;top:auto;max-height:48vh;margin:0;border-radius:14px 14px 0 0;z-index:6;
+        box-shadow:0 -4px 18px rgba(0,0,0,.10)}
+  .rail-h{cursor:pointer}
+  .rail.collapsed .rail-b{display:none}
+}
+.banner{display:none;margin-bottom:12px;padding:10px 12px;border-radius:8px;background:var(--accent-bg);
+        color:var(--accent);font-size:13px}
+.banner.show{display:block}
+.current{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:20px 22px 16px}
+.meta{display:flex;gap:6px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--dim);margin-bottom:10px}
+.tag{background:var(--chip);border-radius:6px;padding:1px 7px;color:var(--muted)}
+.tag.star{color:var(--accent);background:var(--accent-bg)}
+.ja{font-family:var(--ja);font-size:30px;line-height:1.45;letter-spacing:.02em;word-break:keep-all}
+.hangul{font-size:17px;color:var(--muted);margin-top:6px;line-height:1.5}
+.ko{font-size:23px;line-height:1.5;margin-top:14px;padding-top:14px;border-top:1px dashed var(--line);min-height:1.5em}
+.ko.wait{color:var(--dim)}
+.ko.typing::after{content:"▍";color:var(--accent);animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+.kanji{font-family:var(--ja);font-size:18px;color:var(--muted);margin-top:6px}
+.extra{margin-top:14px;padding-top:12px;border-top:1px dashed var(--line)}
+.extra h4{margin:0 0 6px;font-size:12px;font-weight:600;color:var(--dim);letter-spacing:.04em}
+.words{display:grid;grid-template-columns:auto auto 1fr;gap:4px 14px;font-size:16px}
+.words .w{font-family:var(--ja);font-weight:600}.words .k{font-family:var(--ja);color:var(--muted)}
+.gram div{font-size:15px;line-height:1.6}
+.gram b{font-family:var(--ja);font-weight:600;margin-right:6px}
+.actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:16px}
+.history{margin-top:18px}
+.history h3{font-size:12px;color:var(--dim);font-weight:600;margin:0 0 8px;letter-spacing:.04em}
+.item{background:var(--card2);border:1px solid transparent;border-radius:10px;padding:9px 12px;margin-bottom:6px;cursor:pointer}
+.item:hover{border-color:var(--line)}
+.item.sel{border-color:var(--accent)}
+.item .j{font-family:var(--ja);font-size:16px}
+.item .h{font-size:14px;color:var(--accent);margin-top:2px;opacity:.9}
+.item .k{font-size:14px;color:var(--muted);margin-top:2px}
+.moves{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:4px}
+.mv{background:var(--card2);border-radius:10px;padding:10px 12px}
+.mv .j{font-family:var(--ja);font-size:22px}.mv .h{font-size:13px;color:var(--muted);margin-top:2px}
+.mv{all:unset;cursor:pointer;display:block;background:var(--card2);border-radius:10px;padding:10px 12px}
+.mv .k{font-size:16px;margin-top:6px}
+.mi{display:flex;flex-wrap:wrap;gap:4px 8px;align-items:center;margin-top:8px;font-size:12.5px;color:var(--muted)}
+.mi .ty{cursor:default}
+.item-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:10px;padding-bottom:10px;border-bottom:1px dashed var(--line)}
+.item-h .j{font-family:var(--ja);font-size:22px;font-weight:600}.item-h .h{font-size:14px;color:var(--muted)}
+.item-h .k{font-size:16px;color:var(--accent)}
+.empty{color:var(--dim);text-align:center;padding:48px 0;font-size:14px}
+/* one field speech = several boxes: sentence by sentence */
+.sent{padding:12px 0 10px;border-top:1px dashed var(--line)}
+.meta + .sent,.item-h + .sent{border-top:0;padding-top:0}
+.sent .ja{font-size:27px}
+.sent .hangul{font-size:16px;margin-top:4px}
+.sent .ko{font-size:21px;margin-top:6px;padding-top:0;border-top:0;min-height:0}
+.sent.open .ja{color:var(--muted)}
+.sent.open .ko{color:var(--dim);font-size:15px}
+.sent .ko.draft{color:var(--muted);font-style:italic;font-size:19px}
+.sent .ko.draft .tag{font-style:normal;font-size:11px;vertical-align:middle}
+.tag.live{color:var(--accent);background:var(--accent-bg)}
+/* battle view: foe on top (sprite right), yours below (sprite left), like the game screen */
+.battle{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-top:12px}
+.bhead .bbtn{font-size:12px;padding:3px 9px}.bhead .bbtn:first-of-type{margin-left:auto}
+.bsum{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:14px;color:var(--muted)}
+.bsum .j{font-family:var(--ja);font-size:17px;color:var(--text);font-weight:600}
+.battle[hidden]{display:none}
+.bhead{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-bottom:8px}
+.bhead .btag{background:var(--accent-bg);color:var(--accent);border-radius:6px;padding:1px 8px;font-weight:600}
+.bhead .j{font-family:var(--ja);color:var(--text);font-size:15px}
+.side{display:flex;gap:14px;align-items:center;padding:8px 0}
+.side.foe{flex-direction:row-reverse;border-bottom:1px dashed var(--line)}
+.spr{width:96px;height:96px;flex:0 0 96px;image-rendering:pixelated;border-radius:10px;background:var(--card2)}
+.side.fainted .spr{filter:grayscale(1);opacity:.45}
+.side .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.side.foe .info{align-items:flex-start}
+.role{font-size:11px;color:var(--dim);letter-spacing:.06em}
+.role .down{color:var(--accent);margin-left:6px}
+.nm{all:unset;cursor:pointer;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.nm .j{font-family:var(--ja);font-size:24px;font-weight:600}
+.nm .h{font-size:14px;color:var(--accent)}.nm .k{font-size:15px;color:var(--muted)}
+.mvs{display:flex;flex-wrap:wrap;gap:6px}
+.mchip{display:flex;flex-direction:column;align-items:flex-start;gap:1px;text-align:left;background:var(--card2);
+       border:1px solid var(--line);border-radius:8px;padding:5px 9px;line-height:1.25}
+.mchip b{font-family:var(--ja);font-size:15px;font-weight:600}
+.mchip span{font-size:11.5px;color:var(--accent)}.mchip em{font-style:normal;font-size:12px;color:var(--muted)}
+.nomove{font-size:12px;color:var(--dim)}
+.types{display:flex;gap:5px;flex-wrap:wrap}
+.ty{all:unset;cursor:pointer;display:inline-flex;align-items:baseline;gap:4px;color:#fff;border-radius:6px;padding:2px 8px;
+    font-size:12px;text-shadow:0 1px 0 rgba(0,0,0,.25);background:#777}
+.ty b{font-family:var(--ja);font-weight:600;font-size:14px}
+.blog{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);display:flex;flex-direction:column;gap:2px}
+.brow{all:unset;cursor:pointer;display:grid;grid-template-columns:1fr;padding:3px 6px;border-radius:6px}
+.brow:hover{background:var(--card2)}
+.brow .j{font-family:var(--ja);font-size:14.5px}.brow .h{font-size:11.5px;color:var(--accent)}
+.brow .k{font-size:12.5px;color:var(--muted)}
+.brow.last .j{font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <div class="title"><span class="dot" id="dot"></span>포켓몬 일본어</div>
+  <a class="navlink" href="https://claude.ai/artifact/EWELtmEULfaJRPBaDAkuev" target="_blank" rel="noopener" title="파이어레드 일본어 단어장 (새 탭)">📚 단어장</a>
+  <a class="navlink" href="https://claude.ai/artifact/6KtXTghyAYTXxmLWLWByUc" target="_blank" rel="noopener" title="가나의 한자 뿌리 (새 탭)">🈳 가나의 한자 뿌리</a>
+  <button id="glyphBtn" title="새 글자 확인 (게임을 멈추지 않아도 돼요)" style="display:none">🔤 새 글자 <span id="glyphN">0</span></button>
+  <button id="railBtn" title="단어 칸 켜기/끄기">📒 단어<kbd>N</kbd></button>
+  <button id="ocrBtn" title="게임 화면 읽기 켜기/멈추기">📖 읽는 중<kbd>O</kbd></button>
+  <button id="voiceBtn" title="음성 켜기/끄기">🔇 음성 꺼짐<kbd>V</kbd></button>
+  <select id="voiceSel" title="목소리"></select>
+  <select id="rateSel" title="속도">
+    <option value="0.7">0.7×</option><option value="0.85">0.85×</option>
+    <option value="1">1.0×</option><option value="1.15">1.15×</option>
+  </select>
+</header>
+<div class="layout" id="layout">
+<main>
+  <div class="banner" id="pausedBanner">읽기 멈춤 — 게임 화면을 읽지 않아요. <b>O</b> 또는 위 버튼으로 다시 켜요.</div>
+  <div class="banner" id="voiceMsg"></div>
+  <div class="banner" id="banner">아무 데나 한 번 클릭하면 음성이 켜져요 (브라우저 정책)</div>
+  <div id="current" class="current"><div class="empty">게임에서 대사가 나오면 여기에 표시돼요</div></div>
+  <section id="battle" class="battle" hidden></section>
+  <div class="history"><h3>지난 대사 · ↑↓로 선택</h3><div id="history"></div></div>
+</main>
+<aside class="rail" id="rail">
+  <button class="rail-h" id="railH">📒 단어 <small id="railN"></small></button>
+  <div class="rail-b" id="railB"><div class="wempty">연결되면 단어 목록을 불러와요</div></div>
+</aside>
+</div>
+<script>
+const $ = id => document.getElementById(id);
+const store = {get(k, d){ try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch(e){ return d; } },
+               set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }};
+let cards = new Map(), order = [], selected = null, follow = true;
+let voiceOn = store.get('voiceOn', false), voiceName = store.get('voiceName', ''), rate = store.get('rate', 0.85);
+let unlocked = false, voices = [], spoken = new Set(), spokenRev = new Map();
+
+// ---------- voice (browser speech synthesis, Japanese voices on this Mac)
+function loadVoices(){
+  voices = speechSynthesis.getVoices().filter(v => v.lang && v.lang.toLowerCase().startsWith('ja'));
+  const sel = $('voiceSel');
+  sel.innerHTML = voices.length ? voices.map(v => `<option value="${v.name}">${v.name}</option>`).join('')
+                                : '<option>일본어 음성 없음</option>';
+  if (voices.some(v => v.name === voiceName)) sel.value = voiceName;
+  else if (voices.length) { voiceName = voices[0].name; sel.value = voiceName; }
+}
+speechSynthesis.onvoiceschanged = loadVoices; loadVoices();
+$('voiceSel').onchange = e => { voiceName = e.target.value; store.set('voiceName', voiceName); unlocked = true; speak('こんにちは', true); };
+$('rateSel').value = String(rate);
+$('rateSel').onchange = e => { rate = parseFloat(e.target.value); store.set('rate', rate); };
+
+let curUtt = null, voiceErr = '';
+function sayStatus(msg){ voiceErr = msg; const b = $('voiceBtn'); b.title = msg || '음성 켜기/끄기'; $('voiceMsg').textContent = msg; $('voiceMsg').classList.toggle('show', !!msg); }
+function speak(text, force, retry){
+  if (!text || (!voiceOn && !force)) return;
+  if (!unlocked) { $('banner').classList.add('show'); return; }
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text.replace(/\s+/g, ' '));
+  u.lang = 'ja-JP'; u.rate = rate;
+  const v = retry ? null : voices.find(v => v.name === voiceName); if (v) u.voice = v;
+  let started = false;
+  u.onstart = () => { started = true; if (voiceErr) sayStatus(''); };
+  u.onerror = e => { if (e.error !== 'interrupted' && e.error !== 'canceled') { console.warn('[tts]', e.error); sayStatus('음성 오류: ' + e.error); } };
+  curUtt = u;                                   // keep a reference: Chrome can drop unreferenced utterances
+  // Chrome bug: speak() right after cancel() is sometimes swallowed, and the queue can get stuck paused
+  setTimeout(() => {
+    speechSynthesis.resume(); speechSynthesis.speak(u);
+    setTimeout(() => {
+      if (started || curUtt !== u) return;
+      if (!retry) { console.warn('[tts] no start, retry with default voice'); speak(text, force, true); }
+      else sayStatus('음성이 시작되지 않아요 — 목소리를 다른 걸로 골라보세요');
+    }, 2000);
+  }, 60);
+}
+// battle lines and the move list: queued after what is being read (never cut it off)
+let qUtts = [];
+function speakQ(text){
+  if (!text || !voiceOn) return;
+  if (!unlocked) { $('banner').classList.add('show'); return; }
+  const u = new SpeechSynthesisUtterance(text.replace(/\s+/g, ' '));
+  u.lang = 'ja-JP'; u.rate = rate;
+  const v = voices.find(v => v.name === voiceName); if (v) u.voice = v;
+  u.onend = u.onerror = () => { qUtts = qUtts.filter(x => x !== u); };
+  qUtts.push(u);
+  if (qUtts.length > 4) { speechSynthesis.cancel(); qUtts = [u]; }     // fell far behind: jump to the newest
+  speechSynthesis.resume(); speechSynthesis.speak(u);
+}
+function renderVoiceBtn(){
+  const b = $('voiceBtn');
+  b.className = voiceOn ? 'on' : '';
+  b.innerHTML = (voiceOn ? '🔊 음성 켜짐' : '🔇 음성 꺼짐') + '<kbd>V</kbd>';
+  $('banner').classList.toggle('show', voiceOn && !unlocked);
+}
+function toggleVoice(){ voiceOn = !voiceOn; store.set('voiceOn', voiceOn); unlocked = true; if (!voiceOn) { speechSynthesis.cancel(); sayStatus(''); } else speak('おんせい オン', true); renderVoiceBtn(); }
+$('voiceBtn').onclick = toggleVoice;
+const unlock = () => { if (!unlocked) { unlocked = true; renderVoiceBtn(); } };
+addEventListener('pointerdown', unlock); addEventListener('keydown', unlock);
+renderVoiceBtn();
+
+// ---------- reading (OCR) on/off — the state lives in the server
+let ocrOn = true;
+function renderOcr(){
+  const b = $('ocrBtn');
+  b.className = ocrOn ? '' : 'off';
+  b.innerHTML = (ocrOn ? '📖 읽는 중' : '⏸ 읽기 멈춤') + '<kbd>O</kbd>';
+  $('pausedBanner').classList.toggle('show', !ocrOn);
+}
+function toggleOcr(){ fetch('/cmd', {method:'POST', body: JSON.stringify({cmd: 'ocr', on: !ocrOn})}); }
+$('ocrBtn').onclick = toggleOcr;
+$('glyphBtn').onclick = () => window.open('/glyphs', 'glyphs');
+
+// ---------- rendering
+const sayText = c => (c.item ? c.item.ja + '。' : '') + c.ja;
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function cmd(name){ const c = cards.get(selected); if (!c) return;
+  fetch('/cmd', {method:'POST', body: JSON.stringify({cmd: name, id: c.id})}); }
+
+function renderCurrent(){
+  const c = cards.get(selected), el = $('current');
+  if (!c) return;
+  const tags = [`<span>${esc(c.time)}</span>`];
+  if (c.merged) tags.push('<span class="tag">앞 박스와 이어진 문장</span>');
+  if (c.kind === 'utter' && c.boxes > 1) tags.push(`<span class="tag">대화창 ${c.boxes}개</span>`);
+  if (c.kind === 'place') tags.push('<span class="tag star">📍 장소</span>');
+  if (c.kind === 'utter' && c.open) tags.push('<span class="tag live">이어지는 중</span>');
+  if (c.unknown) tags.push(`<span class="tag">새 글자 ${c.unknown}</span>`);
+  if (c.saved) tags.push('<span class="tag star">★ 저장됨</span>');
+  if (c.kind === 'moves') {
+    el.innerHTML = `<div class="meta">${tags.join('')}<span class="tag">기술 목록</span></div>
+      <div class="moves">${c.moves.map(m => `<button class="mv" data-say="${esc(m.ja)}"><div class="j">${esc(m.ja)}</div>
+        <div class="h">${esc(m.hangul)}</div><div class="k">${esc(m.ko || '—')}</div>${moveInfo(m)}</button>`).join('')}</div>
+      <div class="actions"><button data-a="replay">🔊 다시 듣기<kbd>R</kbd></button>
+        <button data-a="save">${c.saved ? '★ 저장됨' : '☆ 저장'}<kbd>S</kbd></button></div>`;
+    el.querySelectorAll('button[data-a]').forEach(b => b.onclick = () => act(b.dataset.a));
+    el.querySelectorAll('.mv[data-say]').forEach(b => b.onclick = () => speak(b.dataset.say, true));
+    return;
+  }
+  const koCls = c.ko ? (c.ko_done ? 'ko' : 'ko typing') : 'ko wait';
+  let extra = '';
+  if (c.words) extra += `<div class="extra"><h4>단어</h4>${c.words.length ? '<div class="words">' + c.words.map(l => {
+      const p = l.split('|').map(s => s.trim());
+      return `<span class="w">${esc(p[0])}</span><span class="k">${esc(p[1] || '')}</span><span>${esc(p[2] || '')}</span>`;
+    }).join('') + '</div>' : '<span class="ko wait">생각 중…</span>'}</div>`;
+  if (c.grammar) extra += `<div class="extra"><h4>문법</h4><div class="gram">${c.grammar.length ? c.grammar.map(l => {
+      const i = l.indexOf('→');
+      return i > 0 ? `<div><b>${esc(l.slice(0, i).trim())}</b>${esc(l.slice(i + 1).trim())}</div>` : `<div>${esc(l)}</div>`;
+    }).join('') : '<span class="ko wait">생각 중…</span>'}</div></div>`;
+  const body = c.kind === 'utter' ? c.sents.map(s => {
+      const ko = s.ko ? esc(s.ko) + (s.draft ? ' <span class="tag">임시 · 문장이 끝나면 다시 번역</span>' : '')
+                      : (s.complete ? '번역 중…' : '… 다음 대화창에서 이어져요');
+      const cls = s.ko ? (s.draft ? 'ko draft' : s.done ? 'ko' : 'ko typing') : 'ko wait';
+      return `<div class="sent${s.complete ? '' : ' open'}"><div class="ja">${esc(s.ja)}</div>
+        <div class="hangul">${esc(s.hangul)}</div><div class="${cls}">${ko}</div></div>`;
+    }).join('') : `<div class="ja">${esc(c.ja)}</div>
+    <div class="hangul">${esc(c.hangul)}</div>
+    <div class="${koCls}">${c.ko ? esc(c.ko) : '번역 중…'}</div>`;
+  el.innerHTML = `<div class="meta">${tags.join('')}</div>
+    ${c.item ? `<div class="item-h"><span class="tag">아이템</span><span class="j">${esc(c.item.ja)}</span>
+      <span class="h">${esc(c.item.hangul)}</span><span class="k">${esc(c.item.ko || '')}</span></div>` : ''}
+    ${body}
+    ${c.kanji ? `<div class="kanji">${esc(c.kanji)}</div>` : ''}
+    ${vwordsHTML(c)}
+    ${extra}
+    <div class="actions">
+      <button data-a="replay">🔊 다시 듣기<kbd>R</kbd></button>
+      <button data-a="words">단어<kbd>W</kbd></button>
+      <button data-a="grammar">문법<kbd>G</kbd></button>
+      <button data-a="save">${c.saved ? '★ 저장됨' : '☆ 저장'}<kbd>S</kbd></button>
+    </div>`;
+  el.querySelectorAll('button[data-a]').forEach(b => b.onclick = () => act(b.dataset.a));
+  el.querySelectorAll('[data-vw]').forEach(b => b.onclick = () => {
+    const id = b.dataset.vw; speak(lex[id].ja, true);
+    if (!railOn) toggleRail();
+    openWord = id; renderRail(); $('rail').scrollTop = 0;
+  });
+}
+function moveInfo(m){
+  if (!m.type) return '';
+  const pw = m.power ? `위력 ${m.power}` : '위력 —', ac = m.acc ? `명중 ${m.acc}` : '명중 —';
+  return `<div class="mi"><span class="ty" style="background:${TYPE_COLOR[m.type] || '#777'}"><b>${esc(m.tja)}</b>${esc(m.tko)}</span>
+    <span>${esc(m.cat)}</span><span>${pw}</span><span>${ac}</span>${m.pp ? `<span>PP ${m.pp}</span>` : ''}</div>`;
+}
+function vwordsHTML(c){
+  const ids = ((c && c.vocab) || []).filter(id => lex[id] && wp(id).status !== 'known')
+    .sort((a, b) => wp(b).seen - wp(a).seen).slice(0, 3);
+  if (!ids.length) return '';
+  return `<div class="vwords">${ids.map(id => { const e = lex[id];
+    return `<button class="vw" data-vw="${esc(id)}"><b>${esc(e.ja)}</b>${e.kanji ? `<i>${esc(e.kanji)}</i>` : ''}<span>${esc(e.ko)}</span>${e.same ? '<em>한국어와 같음</em>' : ''}</button>`; }).join('')}</div>`;
+}
+function renderHistory(){
+  const h = $('history');
+  h.innerHTML = order.slice().reverse().filter(id => id !== selected).slice(0, 30).map(id => {
+    const c = cards.get(id);
+    const label = c.kind === 'moves' ? '기술 · ' : c.kind === 'place' ? '📍 ' : (c.item ? c.item.ja + ' · ' : '');
+    const pr = c.kind === 'moves' ? (c.moves || []).map(m => m.hangul).join(' · ') : c.hangul;
+    return `<div class="item" data-id="${id}"><div class="j">${label}${esc(c.ja)}</div>` +
+      (pr ? `<div class="h">${esc(pr)}</div>` : '') + `<div class="k">${esc(c.ko || '…')}</div></div>`;
+  }).join('');
+  h.querySelectorAll('.item').forEach(d => d.onclick = () => { select(+d.dataset.id); });
+}
+function select(id){ selected = id; follow = id === order[order.length - 1]; renderCurrent(); renderHistory(); renderRail(); }
+function act(a){
+  const c = cards.get(selected); if (!c) return;
+  if (a === 'replay') speak(sayText(c), true);
+  else if (c.kind === 'moves' && (a === 'words' || a === 'grammar')) return;
+  else cmd(a);
+}
+
+// ---------- word rail
+let lex = {}, prog = {}, openWord = null;
+const wp = id => prog[id] || {seen: 0, status: '', star: false, ex: []};
+function wchip(id){
+  const e = lex[id]; if (!e) return '';
+  const p = wp(id);
+  return `<button class="wchip${p.status === 'known' ? ' known' : ''}${openWord === id ? ' sel' : ''}" data-w="${esc(id)}">
+    <span class="wj">${esc(e.ja)}</span><span class="wko">${esc(e.ko)}</span><span class="wn">${p.seen}회${p.star ? '<span class="wstar">★</span>' : ''}</span>
+    ${e.kanji ? `<span class="wk">${esc(e.kanji)}</span>` : ''}${e.same ? '<span class="wsame">한국어와 같음</span>' : ''}</button>`;
+}
+function wdetail(id){
+  const e = lex[id], p = wp(id);
+  return `<div class="wd"><div class="wd-top"><span class="wd-j">${esc(e.ja)}</span>${e.kanji ? `<span class="wd-k">${esc(e.kanji)}</span>` : ''}
+      <button class="wd-say" data-say="${esc(e.ja)}" title="듣기">🔊</button></div>
+    <div class="wd-ko">${esc(e.ko)}</div>
+    ${e.kr ? `<div class="wd-kr">${e.same ? '<b>한국어와 같음</b> · ' : ''}한자 소리 ${esc(e.kr)}</div>` : ''}
+    ${e.note ? `<div class="wd-note">${esc(e.note)}</div>` : ''}
+    ${p.ex && p.ex.length ? `<div class="wd-ex">${p.ex.map(x => `<div><span class="j">${esc(x[0])}</span><span class="k">${esc(x[1])}</span></div>`).join('')}</div>` : ''}
+    <div class="wd-act"><button data-known="${esc(id)}">${p.status === 'known' ? '✓ 외움 · 취소' : '✓ 외웠어요'}</button>
+      <button data-star="${esc(id)}">${p.star ? '★ 복습 중' : '☆ 복습'}</button><span class="wd-n">지금까지 ${p.seen}번 봤어요</span></div></div>`;
+}
+function renderRail(){
+  const ids = Object.keys(lex);
+  if (!ids.length) return;
+  const c = cards.get(selected);
+  const cur = ((c && c.vocab) || []).filter(id => lex[id]).sort((a, b) => (wp(a).status === 'known') - (wp(b).status === 'known'));
+  const top = ids.filter(id => wp(id).status !== 'known' && wp(id).seen > 0).sort((a, b) => wp(b).seen - wp(a).seen).slice(0, 10);
+  const known = ids.filter(id => wp(id).status === 'known').length;
+  $('railN').textContent = `외운 단어 ${known} / ${ids.length}`;
+  $('railB').innerHTML = (openWord && lex[openWord] ? wdetail(openWord) : '') +
+    `<h4>이번 대사</h4>${cur.length ? `<div class="wchips">${cur.map(wchip).join('')}</div>` : '<div class="wempty">단어 목록에 있는 단어가 나오면 여기에 떠요</div>'}
+     <h4>자주 보는데 아직 안 외운 단어</h4><div class="wchips">${top.map(wchip).join('') || '<div class="wempty">다 외웠어요!</div>'}</div>`;
+  $('railB').querySelectorAll('[data-w]').forEach(b => b.onclick = () => {
+    openWord = openWord === b.dataset.w ? null : b.dataset.w;
+    if (openWord) speak(lex[openWord].ja, true);
+    renderRail(); if (openWord) $('rail').scrollTop = 0;
+  });
+  $('railB').querySelectorAll('[data-say]').forEach(b => b.onclick = () => speak(b.dataset.say, true));
+  $('railB').querySelectorAll('[data-known]').forEach(b => b.onclick = () => vset(b.dataset.known, {status: wp(b.dataset.known).status === 'known' ? '' : 'known'}));
+  $('railB').querySelectorAll('[data-star]').forEach(b => b.onclick = () => vset(b.dataset.star, {star: !wp(b.dataset.star).star}));
+}
+function vset(id, change){
+  prog[id] = Object.assign({}, wp(id), change); renderRail();          // show at once; the server confirms
+  fetch('/vocab', {method: 'POST', body: JSON.stringify(Object.assign({id}, change))});
+}
+let railOn = store.get('railOn', true);
+function renderRailOn(){
+  $('layout').classList.toggle('norail', !railOn);
+  $('railBtn').className = railOn ? 'on' : '';
+  $('railBtn').innerHTML = (railOn ? '📒 단어 켜짐' : '📒 단어 꺼짐') + '<kbd>N</kbd>';
+}
+function toggleRail(){ railOn = !railOn; store.set('railOn', railOn); renderRailOn(); }
+$('railBtn').onclick = toggleRail;
+renderRailOn();
+let railCollapsed = store.get('railCollapsed', false);
+$('rail').classList.toggle('collapsed', railCollapsed);
+$('railH').onclick = () => { railCollapsed = !railCollapsed; store.set('railCollapsed', railCollapsed); $('rail').classList.toggle('collapsed', railCollapsed); };
+
+// ---------- battle view
+let battle = null;
+const TYPE_COLOR = {normal:'#8a8a6c', fire:'#e2572b', water:'#4a7fe0', grass:'#4f9e3a', electric:'#c9a000', ice:'#3fa7b5',
+  fighting:'#b23a2e', poison:'#9244a0', ground:'#b08a3e', flying:'#7a86d6', psychic:'#e0457b', bug:'#8a9a1b',
+  rock:'#a08a3a', ghost:'#6a5590', dragon:'#5b3fd6', dark:'#5d4a3e', steel:'#7f8a99'};
+const typesHTML = m => (m.types && m.types.length) ? `<div class="types">${m.types.map(t =>
+  `<button class="ty" data-say="${esc(t.ja)}" style="background:${TYPE_COLOR[t.en] || '#777'}"><b>${esc(t.ja)}</b>${esc(t.ko)}</button>`).join('')}</div>` : '';
+function monHTML(m, side){
+  if (!m) return `<div class="side ${side}"><div class="info"><div class="role">${side === 'foe' ? '상대' : '내 포켓몬'}</div><div class="nomove">아직 몰라요</div></div></div>`;
+  const spr = m.id ? `<img class="spr" src="/sprite/${side === 'foe' ? 'front' : 'back'}/${m.id}.png" alt="" onerror="this.style.visibility='hidden'">` : '<div class="spr"></div>';
+  const mv = m.moves.length ? m.moves.map(x => `<button class="mchip" data-say="${esc(x.ja)}"><b>${esc(x.ja)}</b><span>${esc(x.pr)}</span><em>${esc(x.ko)}</em></button>`).join('')
+                            : '<span class="nomove">쓴 기술이 여기에 쌓여요</span>';
+  return `<div class="side ${side}${m.fainted ? ' fainted' : ''}">${spr}<div class="info">
+      <div class="role">${side === 'foe' ? (battle.wild ? '야생' : '상대') : '내 포켓몬'}${m.fainted ? '<span class="down">쓰러짐</span>' : ''}</div>
+      <button class="nm" data-say="${esc(m.ja)}"><span class="j">${esc(m.ja)}</span><span class="h">${esc(m.pr)}</span><span class="k">${esc(m.ko)}</span></button>
+      ${typesHTML(m)}
+      <div class="mvs">${mv}</div></div></div>`;
+}
+let battleBig = store.get('battleBig', false), battleFold = store.get('battleFold', false);
+function renderBattle(){
+  const el = $('battle');
+  if (!battle || !battle.active) { el.hidden = true; return; }
+  const btns = `<button class="bbtn" data-bb="big" title="반복되는 배틀 대사를 위 번역 칸에 크게">${battleBig ? '반복 대사: 크게' : '반복 대사: 작게'}</button>
+    <button class="bbtn" data-bb="fold">${battleFold ? '펼치기 ▸' : '접기 ▾'}</button>`;
+  const bind = () => {
+    el.hidden = false;
+    el.querySelectorAll('[data-say]').forEach(b => b.onclick = () => speak(b.dataset.say, true));
+    el.querySelectorAll('[data-bb]').forEach(b => b.onclick = () => {
+      if (b.dataset.bb === 'big') { battleBig = !battleBig; store.set('battleBig', battleBig); }
+      else { battleFold = !battleFold; store.set('battleFold', battleFold); }
+      renderBattle();
+    });
+  };
+  if (battleFold) {                              // one line: who is fighting whom
+    const nm = m => m ? `<span class="j">${esc(m.ja)}</span><span>${esc(m.ko)}</span>${typesHTML(m)}` : '<span>?</span>';
+    el.innerHTML = `<div class="bhead"><span class="btag">배틀</span>${btns}</div><div class="bsum">${nm(battle.foe)}<span>vs</span>${nm(battle.mine)}</div>`;
+    return bind();
+  }
+  const who = battle.wild ? '<span>야생 포켓몬</span>' :
+    battle.trainer ? `<span class="j">${esc(battle.trainer.ja)}</span><span>${esc(battle.trainer.ko)}</span>` : '';
+  const log = battle.log.slice(-4).map((r, i, a) => `<button class="brow${i === a.length - 1 ? ' last' : ''}" data-say="${esc(r.ja)}">
+      <span class="j">${esc(r.ja)}</span><span class="h">${esc(r.pr || '')}</span><span class="k">${esc(r.ko)}</span></button>`).join('');
+  el.innerHTML = `<div class="bhead"><span class="btag">배틀</span>${who}${btns}</div>
+    ${monHTML(battle.foe, 'foe')}${monHTML(battle.mine, 'mine')}
+    ${log && !battleBig ? `<div class="blog">${log}</div>` : ''}`;
+  bind();
+}
+
+// ---------- live updates (server-sent events)
+function connect(){
+  const es = new EventSource('/events');
+  es.onopen = () => $('dot').classList.add('on');
+  es.onerror = () => $('dot').classList.remove('on');
+  es.onmessage = e => {
+    const c = JSON.parse(e.data);
+    if (c.type === 'status') {
+      ocrOn = c.ocr; renderOcr();
+      $('glyphN').textContent = c.glyphs || 0;
+      $('glyphBtn').style.display = c.glyphs ? '' : 'none';
+      return;
+    }
+    if (c.type === 'battle') { battle = c; renderBattle(); return; }
+    if (c.type === 'vocab_all') { lex = c.lex; prog = c.prog; renderRail(); renderCurrent(); return; }
+    if (c.type === 'vocab_prog') { prog[c.id] = c.prog; renderRail(); renderCurrent(); return; }
+    if (c.compact && !battleBig) {                   // repeated battle line: in the battle view, and read aloud
+      if (!c._snap && !cards.has(c.id)) speakQ(sayText(c));
+      cards.set(c.id, c); return;
+    }
+    const isNew = !cards.has(c.id);
+    cards.set(c.id, c);
+    if (isNew) { order.push(c.id); order.sort((a, b) => a - b); }
+    if (isNew && (follow || selected === null)) selected = c.id;
+    if (c.kind === 'utter') {                      // a speech grows box by box: read each new box once
+      const last = spokenRev.get(c.id) || 0;
+      if (c._snap) spokenRev.set(c.id, c.rev);
+      else if (c.rev > last && c.id === order[order.length - 1]) { spokenRev.set(c.id, c.rev); speak(c.say); }
+    } else {
+      if (c._snap) spoken.add(c.id);
+      if (!spoken.has(c.id) && c.id === order[order.length - 1]) {
+        spoken.add(c.id);
+        if (c.kind === 'moves' || c.compact || (battle && battle.active)) speakQ(sayText(c)); else speak(sayText(c));
+      }
+    }
+    if (c.id === selected) { renderCurrent(); renderRail(); }
+    if (isNew || c.id !== selected) renderHistory();
+  };
+}
+connect();
+
+// ---------- keys
+addEventListener('keydown', e => {
+  if (e.metaKey || e.ctrlKey || e.altKey || e.target.tagName === 'SELECT') return;
+  const k = e.key.toLowerCase();
+  if (k === 'o') toggleOcr();
+  else if (k === 'v') toggleVoice();
+  else if (k === 'r') act('replay');
+  else if (k === 'w') act('words');
+  else if (k === 'g') act('grammar');
+  else if (k === 's') act('save');
+  else if (k === 'n') toggleRail();
+  else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+    e.preventDefault();
+    const i = order.indexOf(selected), j = Math.max(0, Math.min(order.length - 1, i + (e.key === 'ArrowUp' ? -1 : 1)));
+    if (order.length) select(order[j]);
+  } else if (e.key === 'Escape' && order.length) select(order[order.length - 1]);
+});
+</script>
+</body>
+</html>

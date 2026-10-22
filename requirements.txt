@@ -1,0 +1,14 @@
+# Python 3.12, macOS on Apple Silicon (mlx and Apple Vision OCR are Mac-only)
+numpy>=2.0
+pillow>=10.0
+mlx-lm>=0.32          # local LLM (pulls in mlx, transformers)
+fugashi>=1.3          # Japanese morphology for word hints
+unidic-lite>=1.0.8
+ocrmac>=1.0           # Apple Vision OCR (pulls in pyobjc Vision)
+
+# auto/ (board control, Joy-Con / phone pad)
+pyserial>=3.5
+pygame>=2.5
+
+# optional: vocab/build_apkg.py (AnkiDroid deck)
+# genanki>=0.13

@@ -1,0 +1,18 @@
+# VS Seeker rematch loop (from loop_rec.txt, which stays as it was)
+# python auto.py route routes/loop.txt --loop 20
+# start: the VS Seeker spot (where charge.txt ends), VS Seeker charged. The charge is at the END of each lap,
+# so the first lap uses it right away and every lap ends charged, back on this spot.
+seeker                     # SELECT + waits out the "!" animations; stops if it isn't charged
+walk LEFT 1
+walk DOWN 1
+walk LEFT 2 run
+talk LEFT 3                # A, advances the lines, fights if it's a rematch; moves on if not
+walk RIGHT 3 run
+walk UP 4 run
+walk LEFT 1
+talk LEFT 3
+walk RIGHT 5 run
+talk RIGHT 3
+walk LEFT 2 run
+walk DOWN 4 run
+include charge.txt         # 100 steps, ends on the VS Seeker spot

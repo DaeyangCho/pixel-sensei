@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>파이어레드 패드</title>
+<style>
+:root{--bg:#f4f2ee;--card:#fff;--line:#e2ded6;--text:#1f1d1a;--muted:#6f6b63;--dim:#9b978e;--accent:#d4472a;
+      --accent-bg:#fbe9e3;--good:#2f8f55;--key:#ebe8e1;--key-on:#d4472a}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#141518;--card:#1c1e22;--line:#2c2f35;
+  --text:#ecebe8;--muted:#a3a097;--dim:#6d6b65;--accent:#ef6b4a;--accent-bg:#3a211b;--good:#6cc28a;--key:#2a2d33;--key-on:#ef6b4a}}
+:root[data-theme="dark"]{--bg:#141518;--card:#1c1e22;--line:#2c2f35;--text:#ecebe8;--muted:#a3a097;--dim:#6d6b65;
+  --accent:#ef6b4a;--accent-bg:#3a211b;--good:#6cc28a;--key:#2a2d33;--key-on:#ef6b4a}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo",sans-serif}
+body{padding:max(10px,env(safe-area-inset-top)) 16px max(16px,env(safe-area-inset-bottom));user-select:none;-webkit-user-select:none}
+.top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:50%;background:var(--dim)}.dot.on{background:var(--good)}
+.top b{color:var(--text);font-weight:600}
+.job{margin-left:auto;font-weight:600;color:var(--accent)}
+.jobs{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}
+.jobs button,.jobs input{font:inherit;font-size:14px;border:1px solid var(--line);background:var(--card);color:var(--text);
+  border-radius:10px;padding:8px 12px}
+.jobs button.run{border-color:var(--accent);color:var(--accent);background:var(--accent-bg)}
+.jobs input{width:56px;padding:8px 6px;text-align:center}
+.jobs .stop{margin-left:auto}
+.pad{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);overflow:hidden;align-items:center;gap:10px;background:var(--card);
+     border:1px solid var(--line);border-radius:18px;padding:14px;touch-action:none}
+.shoulders{grid-column:1/-1;display:flex;justify-content:space-between}
+.k{border:0;background:var(--key);color:var(--text);font:600 16px -apple-system,sans-serif;border-radius:12px;touch-action:none}
+.k.on{background:var(--key-on);color:#fff}
+.sh{width:30%;max-width:120px;height:40px}
+.dpad{position:relative;width:100%;max-width:190px;aspect-ratio:1;justify-self:center;touch-action:none}
+.dpad .arm{position:absolute;background:var(--key);border-radius:10px;display:grid;place-items:center;color:var(--muted);font-size:18px}
+.dpad .arm.on{background:var(--key-on);color:#fff}
+.dpad .u{left:33%;top:0;width:34%;height:36%}.dpad .d{left:33%;bottom:0;width:34%;height:36%}
+.dpad .l{top:33%;left:0;width:36%;height:34%}.dpad .r{top:33%;right:0;width:36%;height:34%}
+.mid{display:flex;flex-direction:column;gap:10px;align-items:center}
+.mid .k{width:52px;height:36px;font-size:12px;line-height:1.1}
+.face{position:relative;width:100%;max-width:190px;aspect-ratio:1;justify-self:center}
+.face .k{position:absolute;width:38%;height:38%;border-radius:50%;font-size:20px}
+.face .A{right:0;top:31%}.face .B{left:31%;bottom:0}.face .X{left:31%;top:0}.face .Y{left:0;top:31%}
+.check{margin-top:12px;font-size:12.5px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.chip{background:var(--key);border-radius:6px;padding:1px 7px;color:var(--text);font-variant-numeric:tabular-nums}
+.chip.on{background:var(--accent);color:#fff}
+.log{margin-top:10px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px;
+     font:12px ui-monospace,Menlo,monospace;color:var(--muted);max-height:190px;overflow:auto;white-space:pre-wrap}
+.help{font-size:12px;color:var(--dim);margin-top:8px;line-height:1.6}
+.help kbd{font:11px ui-monospace,monospace;border:1px solid var(--line);border-radius:4px;padding:0 4px}
+</style>
+</head>
+<body>
+<div class="top"><span class="dot" id="dot"></span><span>보드 <b id="board">…</b></span><span>컨트롤러 <b id="ctrl">…</b></span>
+  <span class="job" id="job"></span></div>
+<div class="jobs">
+  <button data-job="battle">⚔ 자동 배틀 <small>ZR</small></button>
+  <button data-job="charge">🔋 충전 <small>ZL</small></button>
+  <button data-job="onsen">♨ 온천</button>
+  <button data-job="loop">🔁 재대결 루프</button><input id="loopN" type="number" min="1" max="99" value="10" aria-label="루프 횟수">
+  <button class="stop" data-job="stop">■ 멈춤</button>
+</div>
+<div class="pad" id="pad">
+  <div class="shoulders"><button class="k sh" data-b="L">L</button><button class="k sh" data-b="R">R</button></div>
+  <div class="dpad" id="dpad"><div class="arm u">▲</div><div class="arm d">▼</div><div class="arm l">◀</div><div class="arm r">▶</div></div>
+  <div class="mid"><button class="k" data-b="MINUS">− SELECT</button><button class="k" data-b="PLUS">+ START</button><button class="k" data-b="HOME">HOME</button></div>
+  <div class="face"><button class="k X" data-b="X">X</button><button class="k Y" data-b="Y">Y</button>
+    <button class="k A" data-b="A">A</button><button class="k B" data-b="B">B</button></div>
+</div>
+<div class="check" id="check"></div>
+<div class="log" id="log"></div>
+<div class="help">키보드: <kbd>←↑↓→</kbd>/<kbd>WASD</kbd> 이동(누르는 동안 계속) · <kbd>J</kbd> A · <kbd>K</kbd> B · <kbd>U</kbd> X · <kbd>I</kbd> Y ·
+  <kbd>Enter</kbd> + · <kbd>\</kbd> − · <kbd>L</kbd>/<kbd>;</kbd> L/R · <kbd>B</kbd> 자동 배틀 · <kbd>C</kbd> 충전<br>
+  자동 실행 중에 스틱이나 버튼을 건드리면 바로 멈추고 직접 조종으로 돌아와요.</div>
+<script>
+const $ = id => document.getElementById(id);
+const K = new URLSearchParams(location.search).get('k') || '';
+const url = p => p + (K ? '?k=' + encodeURIComponent(K) : '');
+const ID = Math.random().toString(36).slice(2, 8);
+const touchHeld = new Set(), keyHeld = new Set(), gpHeld = new Set();
+let touchDir = null, keyDirs = [], gpStick = null, lastSent = '', lastSentAt = 0;
+
+const STICK = {UP: [128, 0], DOWN: [128, 255], LEFT: [0, 128], RIGHT: [255, 128]};
+function current(){
+  const b = new Set([...touchHeld, ...keyHeld, ...gpHeld]);
+  let s = [128, 128];
+  const d = touchDir || keyDirs[keyDirs.length - 1];
+  if (d) s = STICK[d]; else if (gpStick) s = gpStick;
+  return {b: [...b].sort(), lx: s[0], ly: s[1]};
+}
+function send(force){
+  const st = current(), sig = JSON.stringify(st);
+  const moving = st.b.length || st.lx !== 128 || st.ly !== 128;
+  if (!force && sig === lastSent && !(moving && Date.now() - lastSentAt > 1000)) return;
+  lastSent = sig; lastSentAt = Date.now();
+  fetch(url('/input'), {method: 'POST', body: JSON.stringify(Object.assign({id: ID}, st)), keepalive: true}).catch(() => {});
+  renderHeld();
+}
+setInterval(() => send(false), 250);                 // keep a held direction alive
+
+function renderHeld(){
+  const st = current();
+  document.querySelectorAll('[data-b]').forEach(e => e.classList.toggle('on', st.b.includes(e.dataset.b)));
+  const d = touchDir || keyDirs[keyDirs.length - 1];
+  for (const [cls, dir] of [['u','UP'],['d','DOWN'],['l','LEFT'],['r','RIGHT']])
+    document.querySelector('.dpad .' + cls).classList.toggle('on', d === dir);
+}
+
+// ---------- touch buttons
+document.querySelectorAll('[data-b]').forEach(el => {
+  const b = el.dataset.b;
+  el.addEventListener('pointerdown', e => { e.preventDefault(); el.setPointerCapture(e.pointerId); touchHeld.add(b); send(true); if (navigator.vibrate) navigator.vibrate(8); });
+  const up = e => { touchHeld.delete(b); send(true); };
+  el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up); el.addEventListener('lostpointercapture', up);
+});
+// ---------- d-pad: one area, slide between directions
+const dp = $('dpad');
+function dirAt(e){
+  const r = dp.getBoundingClientRect(), x = e.clientX - (r.left + r.width / 2), y = e.clientY - (r.top + r.height / 2);
+  if (Math.hypot(x, y) < r.width * 0.12) return null;
+  return Math.abs(x) > Math.abs(y) ? (x > 0 ? 'RIGHT' : 'LEFT') : (y > 0 ? 'DOWN' : 'UP');
+}
+dp.addEventListener('pointerdown', e => { e.preventDefault(); dp.setPointerCapture(e.pointerId); touchDir = dirAt(e); send(true); if (navigator.vibrate) navigator.vibrate(8); });
+dp.addEventListener('pointermove', e => { if (!dp.hasPointerCapture(e.pointerId)) return; const d = dirAt(e); if (d !== touchDir) { touchDir = d; send(true); } });
+const dpUp = () => { touchDir = null; send(true); };
+dp.addEventListener('pointerup', dpUp); dp.addEventListener('pointercancel', dpUp); dp.addEventListener('lostpointercapture', dpUp);
+
+// ---------- keyboard (Mac): real key down / up, so holding keeps walking
+const KEYDIR = {ArrowUp: 'UP', ArrowDown: 'DOWN', ArrowLeft: 'LEFT', ArrowRight: 'RIGHT', w: 'UP', s: 'DOWN', a: 'LEFT', d: 'RIGHT'};
+const KEYBTN = {j: 'A', k: 'B', u: 'X', i: 'Y', Enter: 'PLUS', '\\': 'MINUS', Backspace: 'MINUS', l: 'L', ';': 'R'};
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.metaKey || e.ctrlKey || e.altKey) return;
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  if (KEYDIR[k]) { e.preventDefault(); if (!keyDirs.includes(KEYDIR[k])) { keyDirs.push(KEYDIR[k]); send(true); } }
+  else if (KEYBTN[k]) { e.preventDefault(); if (!keyHeld.has(KEYBTN[k])) { keyHeld.add(KEYBTN[k]); send(true); } }
+  else if (k === 'b' && !e.repeat) job('battle');
+  else if (k === 'c' && !e.repeat) job('charge');
+});
+addEventListener('keyup', e => {
+  const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+  if (KEYDIR[k]) { keyDirs = keyDirs.filter(d => d !== KEYDIR[k]); send(true); }
+  if (KEYBTN[k]) { keyHeld.delete(KEYBTN[k]); send(true); }
+});
+addEventListener('blur', () => { keyDirs = []; keyHeld.clear(); touchDir = null; touchHeld.clear(); send(true); });
+
+// ---------- controller through the browser (only when the server can't read it itself)
+const GPBTN = {0: 'B', 1: 'A', 2: 'Y', 3: 'X', 4: 'L', 5: 'R', 6: 'ZL', 7: 'ZR', 8: 'MINUS', 9: 'PLUS', 16: 'HOME'};
+let serverHasCtrl = false;
+function pollGamepads(){
+  gpHeld.clear(); gpStick = null;
+  if (!serverHasCtrl) for (const g of navigator.getGamepads ? navigator.getGamepads() : []) {
+    if (!g || g.mapping !== 'standard') continue;
+    for (const [i, n] of Object.entries(GPBTN)) if (g.buttons[i] && g.buttons[i].pressed) gpHeld.add(n);
+    const dir = g.buttons[12]?.pressed ? 'UP' : g.buttons[13]?.pressed ? 'DOWN' : g.buttons[14]?.pressed ? 'LEFT' : g.buttons[15]?.pressed ? 'RIGHT' : null;
+    if (dir) gpStick = STICK[dir];
+    else if (Math.abs(g.axes[0]) > 0.35 || Math.abs(g.axes[1]) > 0.35) gpStick = [Math.round(128 + g.axes[0] * 127), Math.round(128 + g.axes[1] * 127)];
+  }
+  send(false);
+  requestAnimationFrame(pollGamepads);
+}
+requestAnimationFrame(pollGamepads);
+
+// ---------- jobs + status
+function job(name){
+  fetch(url('/job'), {method: 'POST', body: JSON.stringify({job: name, n: +$('loopN').value || 1})}).then(r => r.json()).then(render).catch(() => {});
+}
+document.querySelectorAll('[data-job]').forEach(b => b.onclick = () => job(b.dataset.job));
+const LABEL = {battle: '⚔ 자동 배틀 중', charge: '🔋 충전 중', onsen: '♨ 온천 루트 중', loop: '🔁 재대결 루프 중'};
+function render(s){
+  $('dot').classList.add('on');
+  $('board').textContent = s.board || (s.err ? '연결 안 됨' : '없음(테스트)');
+  serverHasCtrl = s.controllers.length > 0;
+  const gps = [...(navigator.getGamepads ? navigator.getGamepads() : [])].filter(g => g && g.mapping === 'standard');
+  $('ctrl').textContent = serverHasCtrl ? s.controllers.join(', ') : gps.length ? gps[0].id.slice(0, 24) + ' (브라우저)' : '없음';
+  $('job').textContent = s.job ? LABEL[s.job] || s.job : '';
+  document.querySelectorAll('[data-job]').forEach(b => b.classList.toggle('run', b.dataset.job === s.job));
+  const st = s.state;
+  $('check').innerHTML = '입력 확인 ' + ['A','B','X','Y','L','R','ZL','ZR','PLUS','MINUS','HOME'].map(n => `<span class="chip${st.b.includes(n) ? ' on' : ''}">${n}</span>`).join('') +
+    `<span class="chip${st.lx !== 128 || st.ly !== 128 ? ' on' : ''}">스틱 ${st.lx},${st.ly}</span>`;
+  const log = $('log'), atEnd = log.scrollTop + log.clientHeight >= log.scrollHeight - 4;
+  log.textContent = s.log.join('\n');
+  if (atEnd) log.scrollTop = log.scrollHeight;
+}
+function poll(){ fetch(url('/status')).then(r => r.json()).then(render).catch(() => $('dot').classList.remove('on')).finally(() => setTimeout(poll, 600)); }
+poll();
+</script>
+</body>
+</html>

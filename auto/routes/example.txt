@@ -1,0 +1,13 @@
+# route file: one command per line (python auto.py route routes/이름.txt --loop 10, check with --step)
+# walk UP 3 [run] [door]  move; door = tile by tile, waits out a map change (cave/door fade)
+# face LEFT               turn without stepping
+# talk LEFT 20            face left, press A every 0.5 s until someone answers (max 20 s):
+#                         rematch -> battle is fought; no rematch -> their line is closed; nobody -> go on
+#                         never face water with this (A would answer "Surf?" with yes)
+# pace LEFT 50            step left/right on the spot: 100 steps (VS Seeker recharge), back on the same tile
+# press A                 A B X Y L R, START, SELECT (SELECT = registered item, e.g. VS Seeker)
+# wait 1.5                seconds
+# until_free              press A until the dialog box is gone
+# battle [sec]            wait (default 6 s) for a battle and fight it to the end
+# battles [sec]           battle after battle until none starts within sec
+# expect テキスト 5        the screen must show this text within 5 s, otherwise stop (position check)

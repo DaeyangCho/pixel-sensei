@@ -1,0 +1,7 @@
+# VS Seeker recharge: 100 steps on the spot (needs one free tile to the left)
+# python auto.py route routes/charge.txt
+walk UP 4 run
+walk LEFT 2 run
+pace UP 4 len=11 run
+walk RIGHT 2 run
+walk DOWN 6 run
